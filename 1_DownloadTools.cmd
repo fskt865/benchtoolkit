@@ -3,7 +3,7 @@ REM =====================================================================
 REM 1_DownloadTools.cmd - BenchToolkit tool fetcher
 REM
 REM Run this on YOUR internet-connected bench PC, NOT on the customer
-REM unit. Downloads Sysinternals Suite (approx 50 MB) from Microsoft
+REM unit. Downloads Sysinternals Suite (approx 200 MB) from Microsoft
 REM and extracts it to Tools\Sysinternals next to this script.
 REM
 REM Requires Windows 10 1903 or newer (built-in curl.exe and tar.exe).
@@ -35,9 +35,13 @@ if errorlevel 1 (
 )
 
 echo Extracting to %DEST% ...
-tar.exe -xf "%ZIP%" -C "%DEST%"
-if errorlevel 1 (
-    echo ERROR: extract failed. The zip may be incomplete - delete it and rerun.
+REM -m skips restoring file timestamps: FAT/exFAT sticks reject the
+REM utimes call and tar would exit nonzero even after a good extract.
+REM Success is judged by a sentinel file, not tar's exit code.
+tar.exe -xmf "%ZIP%" -C "%DEST%"
+if not exist "%DEST%\procexp.exe" (
+    echo ERROR: extract failed - procexp.exe is missing from %DEST%.
+    echo The zip may be incomplete: delete it and rerun this script.
     exit /b 1
 )
 
